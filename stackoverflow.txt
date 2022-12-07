@@ -1,0 +1,104 @@
+I am having difficulty in running a cucumber test from the command line using kotlin, gradle, and intellij.  
+What I want to do is run the test standalone.   
+  
+I am trying out kotlin, gradle, and intellj.  I've checked on the web for answers, but I can't really see something that applies.  
+
+I build the program using gradle and intellj.  I have feature file for Cucumber that runs fine in the IDE. 
+
+The file layout is 
+For classes 
+build/classes/kotlin/main  
+build/classes/kotlin/test 
+and the source: 
+src/main/kotlin 
+src/test/kotlin 
+
+The root directory for the project is C:\Users\KenV1\IdeaProjects\GameWithCucumber
+
+ When I run it on the command line (see below), I get an errors such as:
+
+WARNING: Failed to load class 'build.classes.kotlin.main.Command'.
+
+This suggests that the classes are compiled into a package. There are no packages in any source files.     
+
+I have to admit I'm a little stumped. 
+
+The details are below. 
+ 
+Here's the run.bat that I wrote.  All the jarfiles have been copied into the jarfiles directory to simplify the path.    
+
+set THISPATH="C:\Users\KenV1\IdeaProjects\jarfiles\*;C:\Users\KenV1\IdeaProjects\jarfiles;.;C:\Users\KenV1\IdeaProjects\GameWithCucumber; C:\Users\KenV1\IdeaProjects\GameWithCucumber\build\classes\kotlin\main;C:\Users\KenV1\IdeaProjects\GameWithCucumber\build\classes\kotlin\test;"
+
+java -cp %THISPATH% org.junit.runner.JUnitCore  RunKukesTest
+
+This results in:
+
+JUnit version 4.13.2
+Sep 11, 2022 9:53:59 PM io.cucumber.core.resource.ClasspathScanner safelyLoadClass
+WARNING: Failed to load class 'build.classes.kotlin.main.Command'.
+By default Cucumber scans the entire classpath for step definitions.
+.... other notes
+java.lang.NoClassDefFoundError: build/classes/kotlin/main/Command (wrong name: Command)
+
+Command.class is located in build/classes/kotlin/main
+
+And the error repeats for every class in main and test. 
+Sometime the WARNING refers to classes.kotlin.main, rather than build.classes.kotlin.main   
+
+RunKukesTest.kt is:
+
+import io.cucumber.junit.CucumberOptions
+import org.junit.runner.RunWith
+import io.cucumber.junit.Cucumber
+
+@RunWith(Cucumber::class)
+@CucumberOptions(
+      features = [
+            "C:\\Users\\KenV1\\IdeaProjects\\GameWithCucumber\\src\\test\\resources\\cucumber\\game.feature"]
+)
+class RunKukesTest 
+
+
+
+Here is build.gradle.kts 
+
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    kotlin("jvm") version "1.7.10"
+    application
+}
+
+group = "me.kenv1"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.cucumber:cucumber-junit:7.6.0")
+
+    implementation("io.cucumber:cucumber-java8:7.6.0")
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+application {
+    mainClass.set("MainKt")
+}
+
+
+BTW, trying to run a JUnit test file (RunKukesTest.kt) from the IDE yields:
+
+Execution failed for task ':test'.
+> No tests found for given includes: [RunKukesTest](--tests filter)
+
+But that's another issue.  It works okay for a standard kotlin junit test.   
